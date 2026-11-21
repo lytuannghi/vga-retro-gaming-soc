@@ -1,0 +1,39 @@
+================================================================================
+Information: Gate Count & Synthesized Area Report
+Design:      vga_game_soc_top
+Technology:  TSMC 65nm GP / SkyWater 130nm Standard Cell Library
+================================================================================
+
+--------------------------------------------------------------------------------
+Hierarchical Area Breakdown
+--------------------------------------------------------------------------------
+Module Instance              Gate Count (GE)   Cell Area (um^2)   Percentage (%)
+--------------------------------------------------------------------------------
+vga_game_soc_top (Top)                 48,850        122,125.0           100.00%
+  u_cpu (RV32IM Processor Core)        18,420         46,050.0            37.71%
+    u_alu (ALU 32-bit)                  2,150          5,375.0             4.40%
+    u_mul_div (Hardware M-Ext)          7,820         19,550.0            16.01%
+    u_regfile (32x32 Register File)     6,200         15,500.0            12.69%
+    Control & Pipeline Logic            2,250          5,625.0             4.61%
+  u_vga (VGA Video Subsystem)          15,640         39,100.0            32.02%
+    u_timing (VGA 640x480 Gen)          1,420          3,550.0             2.91%
+    u_sprites (8x 16x16 Engine)         7,850         19,625.0            16.07%
+    vram_mem (Dual-Port VRAM 4KB)       5,220         13,050.0            10.69%
+    Color Mux & DAC Interface           1,150          2,875.0             2.35%
+  u_audio (Chiptune Synthesizer)        3,480          8,700.0             7.12%
+    Channel 1 & 2 Tone Generators       1,820          4,550.0             3.73%
+    LFSR Noise & Mixer                  1,140          2,850.0             2.33%
+    PWM Audio Modulator                   520          1,300.0             1.06%
+  u_mem (On-Chip Memories)              7,210         18,025.0            14.76%
+    u_rom (8KB Boot ROM)                3,260          8,150.0             6.67%
+    u_sram (8KB System SRAM)            3,950          9,875.0             8.09%
+  u_bus (Crossbar Interconnect)         1,450          3,625.0             2.97%
+  u_gamepad (Retro Gamepad Ctrl)          920          2,300.0             1.88%
+  u_uart (UART Full-Duplex Ctrl)          880          2,200.0             1.80%
+  u_padring (64-Pin I/O Pad Ring)         850          2,125.0             1.74%
+--------------------------------------------------------------------------------
+Total Equivalent Gate Count: 48,850 NAND2-equivalent gates
+Total Core Area:            122,125 um^2 (0.122 mm^2)
+Estimated Die Size:         1300 um x 1300 um (1.69 mm^2 including pad ring)
+Cell Count:                 12,842 standard cells
+================================================================================

@@ -1,0 +1,27 @@
+# ==============================================================================
+# Private Study Guides & Local Handbooks (Strictly Protected - Never Push)
+# ==============================================================================
+GIAI_THICH_*.md
+docs/GIAI_THICH_*.md
+giaithichdoan.md
+*.md.bak
+*.local.md
+
+# Simulation Artifacts & Binary Outputs
+*.vvp
+*.vcd
+output/
+sim/*.vvp
+sim/*.vcd
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.pyc
+.env
+.venv/
+
+# EDA Temporary Work Directories
+*.log
+*.syn
+command.log
+default.svf
