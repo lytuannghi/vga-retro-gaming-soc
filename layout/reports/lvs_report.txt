@@ -3,7 +3,7 @@ GDSII STRUCTURAL EXTRACTION & PIN CONNECTIVITY REFERENCE REPORT
 Project     : RetroPlay VGA Gaming SoC
 Target      : vga_game_soc_top
 GDSII File  : layout/gds/vga_game_soc_top.gds (546,250 bytes)
-Note        : Full foundry Netgen/Calibre LVS requires PDK SPICE extraction
+Note        : External Magic/Netgen required for SPICE extraction & transistor LVS
 ================================================================================
 
 Die Bounding Box      : (0.00, 0.00) um to (660.00, 660.00) um
