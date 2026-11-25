@@ -2,7 +2,7 @@
 # File: run_synthesis.tcl
 # Tool: Synopsys Design Compiler / Yosys Open-Source Flow
 # Project: RetroPlay VGA Gaming SoC
-# Target Library: TSMC 65nm GP / SkyWater 130nm Standard Cells
+# Target Library: SkyWater 130nm HD Standard Cell Library (1.80V, 25C)
 # =============================================================================
 
 puts "======================================================================"

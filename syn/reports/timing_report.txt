@@ -1,8 +1,8 @@
 ================================================================================
-REFERENCE TIMING CONSTRAINT SUMMARY (PRE-SYNTHESIS ANALYTICAL BUDGET)
-Target      : vga_game_soc_top
-Clock Goal  : 100 MHz (10.00 ns) Reference Budget (OpenSTA requires Foundry .lib)
+SDC TIMING CONSTRAINT & RTL REGISTER AUDIT: vga_game_soc_top
+Constraint File: syn/vga_game_timing.sdc
+Target Clock:    100.00 MHz (Period = 10.000 ns)
 ================================================================================
-RTL Static Verification : 0 combinational / or % operators (32-cycle restoring DIV)
-Simulation Signoff      : 10/10 Icarus Verilog -Wall checks PASSED (0 warnings)
-================================================================================
+
+Note: Gate-level post-synthesis STA slack requires external OpenSTA execution.
+Verified 0 combinational / or % operators and 100% functional pass under iverilog -Wall.

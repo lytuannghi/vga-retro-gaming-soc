@@ -11,7 +11,7 @@ The repository provides the complete ASIC design flow from synthesizable RTL to 
 | Parameter | Specification | Notes |
 | :--- | :--- | :--- |
 | **Processor Architecture** | RV32IM (32-bit RISC-V) | Integer base + Hardware Multiplier/Divider (M-Extension) |
-| **System Clock** | 100.0 MHz (10.0 ns) | Synthesized with positive slack on TSMC 65nm / Sky130 |
+| **System Clock** | 100.0 MHz (10.0 ns) | 100.0 MHz SDC timing budget (`syn/vga_game_timing.sdc`, SkyWater 130nm target) |
 | **Video Clock** | 25.175 MHz (VGA Standard) | Generated via 1/4 system clock tick enable |
 | **Display Resolution** | 640x480 @ 60 Hz | Standard 8-bit color depth (R3:G3:B2) |
 | **Tilemap Buffer** | 4 KB Dual-Port VRAM | 80 columns x 60 rows text/tile matrix |
@@ -19,7 +19,7 @@ The repository provides the complete ASIC design flow from synthesizable RTL to 
 | **Audio Subsystem** | 4-channel Chiptune Synthesizer | Pulse 1 (Lead), Pulse 2 (Harmony), Triangle (Bass), LFSR Noise |
 | **Audio Output** | 1-bit 100 MHz PWM DAC | Direct connection via single RC low-pass filter |
 | **Memory Subsystem** | 8 KB Boot ROM + 8 KB System SRAM | Byte-strobe enabled single-cycle memory interface |
-| **Total Gate Count** | 48,850 NAND2-equivalent gates | Hierarchical area: 122,125 um^2 |
+| **RTL Structural Audit** | Clean (`syn/analyze_rtl.py`) | External Yosys/OpenSTA required for gate-level cell count & slack |
 | **Die Dimensions** | 1300 um x 1300 um | 1.69 mm^2 including 64-pin padframe |
 | **DRC / Physical Layout** | Geometric DRC Clean (0 Violations) | `layout/scripts/verify_gds_drc.py` + `syn/analyze_rtl.py` |
 
@@ -84,20 +84,12 @@ The physical implementation was performed targeting standard 65nm CMOS standard 
 - **Pad Ring:** 64 wirebond I/O pads with bidirectional ESD protection clamps
 - **Metal Distribution:** 4-layer metal stack (M1 cell internal, M2/M3 routing and power mesh, M4 global clock H-tree trunk)
 - **DRC Verification:** 0 violations across 18 rules
-- **LVS Verification:** 100% net and device match between schematic netlist and extracted GDSII
+- **LVS / Port Check:** GDSII geometry audited cleanly; external Magic/Netgen required for SPICE extraction & LVS
 
-### Synthesis & Static Timing Analysis (STA)
-- **Target Frequency:** 100.0 MHz ($T = 10.0\text{ ns}$)
-- **Setup Slack:** **+2.876 ns** (Timing closure achieved)
-- **Hold Slack:** **+0.160 ns**
-- **Maximum Frequency ($F_{\max}$):** 140.01 MHz
-- **Equivalent Gate Count Breakdown:**
-  - RV32IM CPU Core: 18,420 gates (37.7%)
-  - VGA 2D Video Subsystem: 15,640 gates (32.0%)
-  - Chiptune Synthesizer: 3,480 gates (7.1%)
-  - On-Chip Memories: 7,210 gates (14.8%)
-  - Bus & Peripherals: 4,100 gates (8.4%)
-  - **Total:** 48,850 NAND2-equivalent gates
+### RTL Synthesis Readiness & SDC Audit
+- **Target Frequency:** 100.0 MHz ($T = 10.0	ext{ ns}$, `syn/vga_game_timing.sdc`)
+- **Structural RTL Check:** Verified via `syn/analyze_rtl.py` (0 combinational `/` or `%` operators)
+- **Note:** Foundry gate count and post-synthesis STA slack require external Yosys/OpenSTA.
 
 ---
 
