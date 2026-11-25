@@ -75,11 +75,11 @@ The repository provides the complete ASIC design flow from synthesizable RTL to 
 
 ## Physical Design & Tape-Out Metrics
 
-The physical implementation was performed targeting standard 65nm CMOS standard cell libraries.
+The physical layout was generated for the open-source SkyWater 130nm (`sky130`) layer deck (`layout/scripts/build_layout_vga_soc.py`).
 
 ### Layout Geometry
 - **Layout File:** `layout/gds/vga_game_soc_top.gds`
-- **Core Area:** 122,125 um^2 ($350\mu m \times 350\mu m$)
+- **Core Area:** Floorplan geometry audited in `layout/reports/drc_report.txt` (external Yosys/OpenROAD required for post-layout cell area)
 - **Die Size:** 1300 um x 1300 um (1.69 mm^2)
 - **Pad Ring:** 64 wirebond I/O pads with bidirectional ESD protection clamps
 - **Metal Distribution:** 4-layer metal stack (M1 cell internal, M2/M3 routing and power mesh, M4 global clock H-tree trunk)
