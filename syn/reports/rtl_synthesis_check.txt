@@ -1,0 +1,33 @@
+================================================================================
+RTL SYNTHESIS READINESS & CONSTRAINT REPORT: vga-retro-gaming-soc
+Method : Static Verilog/SV Structural Parser + SDC Constraint Audit
+Note   : Foundry Gate-Level Netlist & STA require PDK Liberty (.lib) + Synopsys/OpenROAD
+================================================================================
+RTL Source Files Inspected : 15
+Code Lines (Non-Comment)   : 1347
+Sequential Blocks          : 19
+Combinational Blocks       : 3
+Declared reg/logic Signals : 85
+
+MODULE BREAKDOWN:
+  rtl\audio\chiptune_audio.v                    | modules=chiptune_audio               | loc=  72 | seq= 3 | comb= 0
+  rtl\bus\soc_interconnect.v                    | modules=soc_interconnect             | loc= 118 | seq= 0 | comb= 1
+  rtl\cpu\alu_mul_div.v                         | modules=alu_mul_div                  | loc= 104 | seq= 1 | comb= 0
+  rtl\cpu\riscv_alu.v                           | modules=riscv_alu                    | loc=  28 | seq= 0 | comb= 1
+  rtl\cpu\riscv_core.v                          | modules=riscv_core                   | loc= 226 | seq= 1 | comb= 1
+  rtl\cpu\riscv_regfile.v                       | modules=riscv_regfile                | loc=  28 | seq= 1 | comb= 0
+  rtl\mem\boot_rom.v                            | modules=boot_rom                     | loc=  38 | seq= 1 | comb= 0
+  rtl\mem\system_sram.v                         | modules=system_sram                  | loc=  37 | seq= 1 | comb= 0
+  rtl\padframe\chip_padring.v                   | modules=chip_padring                 | loc=  37 | seq= 0 | comb= 0
+  rtl\peripherals\gamepad_controller.v          | modules=gamepad_controller           | loc=  77 | seq= 2 | comb= 0
+  rtl\peripherals\uart_controller.v             | modules=uart_controller              | loc=  85 | seq= 1 | comb= 0
+  rtl\vga_game_soc_top.v                        | modules=vga_game_soc_top             | loc= 267 | seq= 1 | comb= 0
+  rtl\video\sprite_engine.v                     | modules=sprite_engine                | loc=  86 | seq= 2 | comb= 0
+  rtl\video\vga_subsystem_top.v                 | modules=vga_subsystem_top            | loc=  84 | seq= 3 | comb= 0
+  rtl\video\vga_timing_gen.v                    | modules=vga_timing_gen               | loc=  60 | seq= 2 | comb= 0
+
+SDC CLOCK CONSTRAINTS:
+  vga_game_soc_timing.sdc: port=clk | period=10.00 ns | target=100.00 MHz
+
+ARITHMETIC DIVISION/MODULO CHECK: CLEAN (0 combinational / or % operators)
+================================================================================

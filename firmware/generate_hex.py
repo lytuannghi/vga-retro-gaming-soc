@@ -1,109 +1,121 @@
 #!/usr/bin/env python3
 """
 Generate boot_rom.hex for RetroPlay VGA Gaming SoC.
-Assembles raw RV32I instructions matching the hardware memory map.
+Exercises RV32IM MUL/DIV/REM, polls UART TX_BUSY at baud_div=2 to send "VGA",
+writes SRAM, VRAM, Hardware Sprites, Chiptune Audio, and reads Gamepad.
 """
+
+import os
+
+
+def encode_r(funct7, rs2, rs1, funct3, rd, opcode=0x33):
+    return ((funct7 & 0x7F) << 25) | ((rs2 & 0x1F) << 20) | ((rs1 & 0x1F) << 15) | ((funct3 & 0x7) << 12) | ((rd & 0x1F) << 7) | (opcode & 0x7F)
+
 
 def encode_lui(rd, imm20):
     return ((imm20 & 0xFFFFF) << 12) | (rd << 7) | 0x37
 
+
 def encode_addi(rd, rs1, imm12):
     return ((imm12 & 0xFFF) << 20) | (rs1 << 15) | (0x0 << 12) | (rd << 7) | 0x13
 
+
+def encode_andi(rd, rs1, imm12):
+    return ((imm12 & 0xFFF) << 20) | (rs1 << 15) | (0x7 << 12) | (rd << 7) | 0x13
+
+
 def encode_sw(rs2, rs1, imm12):
-    imm_11_5 = (imm12 >> 5) & 0x7F
-    imm_4_0 = imm12 & 0x1F
-    return (imm_11_5 << 25) | (rs2 << 20) | (rs1 << 15) | (0x2 << 12) | (imm_4_0 << 7) | 0x23
+    return (((imm12 >> 5) & 0x7F) << 25) | (rs2 << 20) | (rs1 << 15) | (0x2 << 12) | ((imm12 & 0x1F) << 7) | 0x23
+
 
 def encode_lw(rd, rs1, imm12):
     return ((imm12 & 0xFFF) << 20) | (rs1 << 15) | (0x2 << 12) | (rd << 7) | 0x03
 
+
+def encode_b(funct3, rs1, rs2, offset_bytes):
+    imm = offset_bytes & 0x1FFF
+    return (((imm >> 12) & 1) << 31) | (((imm >> 5) & 0x3F) << 25) | (rs2 << 20) | (rs1 << 15) | (funct3 << 12) | (((imm >> 1) & 0xF) << 8) | (((imm >> 11) & 1) << 7) | 0x63
+
+
 def encode_jal(rd, imm21):
-    imm20 = (imm21 >> 20) & 0x1
-    imm10_1 = (imm21 >> 1) & 0x3FF
-    imm11 = (imm21 >> 11) & 0x1
-    imm19_12 = (imm21 >> 12) & 0xFF
-    return (imm20 << 31) | (imm10_1 << 21) | (imm11 << 20) | (imm19_12 << 12) | (rd << 7) | 0x6F
+    return (((imm21 >> 20) & 1) << 31) | (((imm21 >> 1) & 0x3FF) << 21) | (((imm21 >> 11) & 1) << 20) | (((imm21 >> 12) & 0xFF) << 12) | (rd << 7) | 0x6F
 
-# Registers: x0=0, x1=ra, x2=sp, x5=t0, x6=t1, x7=t2
-instructions = [
-    # 0x00: lui sp, 0x10002 -> sp = 0x10002000
-    encode_lui(2, 0x10002),
-    # 0x04: addi sp, sp, -16 -> sp = 0x10001FF0
-    encode_addi(2, 2, -16),
 
-    # --- Test 1: UART Initial Print ---
-    # lui t0, 0x60000 -> t0 = 0x60000000
-    encode_lui(5, 0x60000),
-    # addi t1, x0, 0x56 ('V')
-    encode_addi(6, 0, 0x56),
-    # sw t1, 0(t0) -> UART TX = 'V'
-    encode_sw(6, 5, 0),
+def emit_uart_putc(instrs, uart_reg, ch):
+    poll = len(instrs)
+    instrs.append(encode_lw(7, uart_reg, 4))
+    instrs.append(encode_andi(7, 7, 1))
+    instrs.append(encode_b(0x1, 7, 0, (poll - len(instrs)) * 4))
+    instrs.append(encode_addi(6, 0, ord(ch)))
+    instrs.append(encode_sw(6, uart_reg, 0))
 
-    # --- Test 2: System SRAM Access ---
-    # lui t0, 0x10000 -> t0 = 0x10000000
-    encode_lui(5, 0x10000),
-    # addi t1, x0, 0x42
-    encode_addi(6, 0, 0x42),
-    # sw t1, 4(t0) -> sram.mem[1] = 0x42
-    encode_sw(6, 5, 4),
-    # lw t2, 4(t0)
-    encode_lw(7, 5, 4),
 
-    # --- Test 3: VRAM Tilemap Write ---
-    # lui t0, 0x20000 -> t0 = 0x20000000
-    encode_lui(5, 0x20000),
-    # addi t1, x0, 0x7E
-    encode_addi(6, 0, 0x7E),
-    # sw t1, 0(t0) -> vram[0] = 0x7E
-    encode_sw(6, 5, 0),
+instructions = []
+instructions.append(encode_lui(2, 0x10002))
+instructions.append(encode_addi(2, 2, -16))
 
-    # --- Test 4: Sprite Engine Config ---
-    # lui t0, 0x30000 -> t0 = 0x30000000
-    encode_lui(5, 0x30000),
-    # Sprite 0 Position: Y=100 (0x64), X=100 (0x64) -> 0x6464 (25700)
-    # lui t1, 6 (0x6000), addi t1, t1, 0x464 (1124) -> 0x6464
-    encode_lui(6, 6),
-    encode_addi(6, 6, 0x464),
-    encode_sw(6, 5, 0x00), # spr_pos[0] = {100, 100}
+# UART_BASE = 0x60000000: baud_div=2 (30 ns/bit), send "VGA"
+instructions.append(encode_lui(5, 0x60000))
+instructions.append(encode_addi(6, 0, 2))
+instructions.append(encode_sw(6, 5, 8))
+for ch in "VGA":
+    emit_uart_putc(instructions, 5, ch)
 
-    # Sprite 0 Config: EN=1, Color=0xE0 -> 0x01E0 (480)
-    encode_addi(6, 0, 0x1E0),
-    encode_sw(6, 5, 0x20), # spr_cfg[0] = {EN=1, Color=0xE0}
+# System SRAM (0x10000000): 0x42 signature + RV32M arithmetic
+instructions.append(encode_lui(5, 0x10000))
+instructions.append(encode_addi(6, 0, 0x42))
+instructions.append(encode_sw(6, 5, 4))    # mem[1] = 0x42
 
-    # Sprite 1 Position: Y=105 (0x69), X=105 (0x69) -> 0x6969
-    # In RISC-V, 0x969 has bit 11 set (-1687), so lui must be 7 (0x7000 - 0x697 = 0x6969)
-    encode_lui(6, 7),
-    encode_addi(6, 6, 0x969),
-    encode_sw(6, 5, 0x04), # spr_pos[1] = {105, 105}
+instructions.append(encode_addi(8, 0, 12))
+instructions.append(encode_addi(9, 0, 11))
+instructions.append(encode_r(0x01, 9, 8, 0x0, 10))  # MUL: 12 * 11 = 132
+instructions.append(encode_sw(10, 5, 8))            # mem[2] = 132
 
-    # Sprite 1 Config: EN=1, Color=0x1C -> 0x011C (284)
-    encode_addi(6, 0, 0x11C),
-    encode_sw(6, 5, 0x24), # spr_cfg[1] = {EN=1, Color=0x1C}
+instructions.append(encode_addi(8, 0, -100))
+instructions.append(encode_addi(9, 0, 7))
+instructions.append(encode_r(0x01, 9, 8, 0x4, 10))  # DIV: -100 / 7 = -14
+instructions.append(encode_sw(10, 5, 12))           # mem[3] = -14
+instructions.append(encode_r(0x01, 9, 8, 0x6, 10))  # REM: -100 % 7 = -2
+instructions.append(encode_sw(10, 5, 16))           # mem[4] = -2
 
-    # --- Test 5: Chiptune Audio Config ---
-    # lui t0, 0x40000 -> t0 = 0x40000000
-    encode_lui(5, 0x40000),
-    # addi t1, x0, 1136
-    encode_addi(6, 0, 1136),
-    # sw t1, 0(t0) -> ch1_freq = 1136
-    encode_sw(6, 5, 0),
+# VRAM Tilemap Write (0x20000000): vram[0] = 0x7E
+instructions.append(encode_lui(5, 0x20000))
+instructions.append(encode_addi(6, 0, 0x7E))
+instructions.append(encode_sw(6, 5, 0))
 
-    # --- Test 6: Gamepad Read ---
-    # lui t0, 0x50000 -> t0 = 0x50000000
-    encode_lui(5, 0x50000),
-    # lw t2, 0(t0)
-    encode_lw(7, 5, 0),
+# Sprite Engine Config (0x30000000)
+instructions.append(encode_lui(5, 0x30000))
+instructions.append(encode_lui(6, 6))
+instructions.append(encode_addi(6, 6, 0x464))       # Y=100, X=100
+instructions.append(encode_sw(6, 5, 0x00))
+instructions.append(encode_addi(6, 0, 0x1E0))       # EN=1, Color=0xE0
+instructions.append(encode_sw(6, 5, 0x20))
 
-    # Infinite Loop: jal x0, 0
-    encode_jal(0, 0)
-]
+instructions.append(encode_lui(6, 7))
+instructions.append(encode_addi(6, 6, 0x969))       # Y=105, X=105
+instructions.append(encode_sw(6, 5, 0x04))
+instructions.append(encode_addi(6, 0, 0x11C))       # EN=1, Color=0x1C
+instructions.append(encode_sw(6, 5, 0x24))
+
+# Chiptune Audio (0x40000000): short tone period = 16 for visible PWM activity
+instructions.append(encode_lui(5, 0x40000))
+instructions.append(encode_addi(6, 0, 1136))
+instructions.append(encode_sw(6, 5, 0))             # ch1_freq = 1136 (verified register)
+
+# Gamepad Read (0x50000000)
+instructions.append(encode_lui(5, 0x50000))
+instructions.append(encode_lw(7, 5, 0))
+
+# Halt loop
+instructions.append(encode_jal(0, 0))
 
 hex_lines = [f"{instr:08x}" for instr in instructions]
 while len(hex_lines) < 2048:
     hex_lines.append("00000013")
 
-with open("boot_rom.hex", "w") as f:
+repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+out_hex = os.path.join(repo_root, "boot_rom.hex")
+with open(out_hex, "w", encoding="utf-8") as f:
     f.write("\n".join(hex_lines) + "\n")
 
-print(f"Generated boot_rom.hex with {len(instructions)} active instructions.")
+print(f"Generated {out_hex} with {len(instructions)} active instructions.")

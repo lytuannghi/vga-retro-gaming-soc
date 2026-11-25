@@ -25,3 +25,6 @@ __pycache__/
 *.syn
 command.log
 default.svf
+
+sim/output/
+*GIAI_THICH*.md

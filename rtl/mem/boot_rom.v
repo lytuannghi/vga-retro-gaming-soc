@@ -50,9 +50,9 @@ module boot_rom #(
     end
 
     // Initial load from hex if present
+    integer i;
     initial begin
         // default NOPs
-        integer i;
         for (i = 0; i < MEM_DEPTH; i = i + 1) begin
             mem[i] = 32'h00000013; // nop (addi x0, x0, 0)
         end

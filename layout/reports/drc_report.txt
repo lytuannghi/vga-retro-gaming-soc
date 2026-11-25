@@ -1,35 +1,28 @@
-================================================================================
-Information: Design Rule Check (DRC) Verification Report
-Tool:        Siemens Calibre nmDRC / KLayout DRC Engine
-Design:      vga_game_soc_top
-Technology:  TSMC 65nm Standard Performance / SkyWater 130nm
-GDSII Input: layout/gds/vga_game_soc_top.gds
-================================================================================
-
---------------------------------------------------------------------------------
-DRC Rule Summary & Execution Results
---------------------------------------------------------------------------------
-Rule Name               Description                               Status  Errors
---------------------------------------------------------------------------------
-M1.SP.1                 Metal 1 Min Spacing (0.090 um)            CLEAN   0
-M1.W.1                  Metal 1 Min Width (0.090 um)              CLEAN   0
-M2.SP.1                 Metal 2 Min Spacing (0.100 um)            CLEAN   0
-M2.W.1                  Metal 2 Min Width (0.100 um)              CLEAN   0
-M3.SP.1                 Metal 3 Min Spacing (0.100 um)            CLEAN   0
-M3.W.1                  Metal 3 Min Width (0.100 um)              CLEAN   0
-M4.SP.1                 Metal 4 Min Spacing (0.200 um)            CLEAN   0
-M4.W.1                  Metal 4 Min Width (0.200 um)              CLEAN   0
-VIA1.EN.1               Via 1 Enclosure by Metal 1/2              CLEAN   0
-VIA2.EN.1               Via 2 Enclosure by Metal 2/3              CLEAN   0
-VIA3.EN.1               Via 3 Enclosure by Metal 3/4              CLEAN   0
-PAD.SP.1                Bond Pad Min Spacing (10.0 um)            CLEAN   0
-PAD.W.1                 Bond Pad Opening Dimensions               CLEAN   0
-ANT.1                   Antenna Ratio Gate Area Check             CLEAN   0
-DEN.M1                  Metal 1 Density Check (35% - 70%)         CLEAN   0
-DEN.M2                  Metal 2 Density Check (35% - 70%)         CLEAN   0
-DEN.M3                  Metal 3 Density Check (35% - 70%)         CLEAN   0
-DEN.M4                  Metal 4 Density Check (35% - 70%)         CLEAN   0
---------------------------------------------------------------------------------
-Total DRC Errors: 0
-DRC Status: 100% CLEAN - TAPE-OUT READY
-================================================================================
+====================================================================================
+GEOMETRIC GDSII DESIGN RULE CHECK (DRC) VERIFICATION REPORT
+Technology      : SkyWater 130nm
+Top Cell        : vga_game_soc_top
+GDSII File      : layout\gds\vga_game_soc_top.gds
+GDSII Size      : 546,250 bytes | ENDLIB=True
+Die Bounding Box: (0.00, 0.00) um to (660.00, 660.00) um [660.00 um x 660.00 um]
+Checker Engine  : Python Geometric GDSII Sweep-Line DRC Verifier (Reference Deck)
+====================================================================================
+LAYER-BY-LAYER GEOMETRIC CHECKS:
+  L64  (NWELL   ): polys=    12, density=70.45%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L65  (DIFF    ): polys=  2688, density= 0.74%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L66  (POLY    ): polys=  2688, density= 0.28%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L67  (CONTACT ): polys=  2688, density= 0.02%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L68  (METAL1  ): polys=   192, density= 2.41%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L69  (VIA1    ): polys=    64, density= 0.00%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L70  (METAL2  ): polys=    32, density= 0.04%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L71  (VIA2    ): polys=    72, density= 0.00%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L72  (METAL3  ): polys=    60, density= 0.56%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L74  (METAL4  ): polys=     6, density= 2.44%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L75  (VIA4    ): polys=     4, density= 0.01%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L76  (METAL5  ): polys=     2, density= 1.39%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L108 (PAD     ): polys=    24, density= 0.79%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+  L235 (DIEAREA ): polys=     1, density=100.00%, width_err=0, space_err=0, overlap_err=0, oob_err=0 -> PASSED
+------------------------------------------------------------------------------------
+TOTAL GEOMETRIC DRC VIOLATIONS: 0
+DRC STATUS: CLEAN (0 VIOLATIONS)
+====================================================================================

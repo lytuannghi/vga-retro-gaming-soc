@@ -112,28 +112,30 @@ module riscv_core (
         .zero     (alu_zero)
     );
 
+    // Multi-cycle execution FSM: FETCH -> EXECUTE -> MEM_WAIT / M_WAIT
+    localparam S_FETCH    = 2'b00;
+    localparam S_EXEC     = 2'b01;
+    localparam S_MEM_WAIT = 2'b10;
+    localparam S_M_WAIT   = 2'b11;
+
+    reg [1:0] state;
+
     // Hardware Multiplier / Divider (M-Extension)
     wire is_m_extension = (opcode == `OPCODE_R_TYPE) && (funct7 == 7'b0000001);
+    wire mul_div_start  = (state == S_EXEC) && is_m_extension;
     wire [31:0] mul_div_result;
     wire        mul_div_ready;
 
     alu_mul_div u_mul_div (
         .clk      (clk),
         .rst_n    (rst_n),
-        .start    (is_m_extension),
+        .start    (mul_div_start),
         .funct3   (funct3),
         .operand_a(rs1_data),
         .operand_b(rs2_data),
         .result   (mul_div_result),
         .ready    (mul_div_ready)
     );
-
-    // Multi-cycle execution FSM: FETCH -> EXECUTE -> MEM_WAIT
-    localparam S_FETCH    = 2'b00;
-    localparam S_EXEC     = 2'b01;
-    localparam S_MEM_WAIT = 2'b10;
-
-    reg [1:0] state;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -208,14 +210,13 @@ module riscv_core (
 
                         `OPCODE_R_TYPE: begin
                             if (is_m_extension) begin
-                                reg_wr_en   <= 1'b1;
-                                reg_wr_data <= mul_div_result;
+                                state <= S_M_WAIT;
                             end else begin
                                 reg_wr_en   <= 1'b1;
                                 reg_wr_data <= alu_result;
+                                pc          <= pc + 4;
+                                state       <= S_FETCH;
                             end
-                            pc    <= pc + 4;
-                            state <= S_FETCH;
                         end
 
                         `OPCODE_LOAD: begin
@@ -253,6 +254,15 @@ module riscv_core (
                         end
                         pc    <= pc + 4;
                         state <= S_FETCH;
+                    end
+                end
+
+                S_M_WAIT: begin
+                    if (mul_div_ready) begin
+                        reg_wr_en   <= 1'b1;
+                        reg_wr_data <= mul_div_result;
+                        pc          <= pc + 4;
+                        state       <= S_FETCH;
                     end
                 end
             endcase
